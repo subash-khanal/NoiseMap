@@ -12,3 +12,9 @@ pyarrow>=14.0.0
 geopandas
 shapely
 earthengine-api
+
+# ML notebook & train_noise_model.py
+torch
+wandb
+scikit-learn
+joblib
