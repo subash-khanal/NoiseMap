@@ -11,3 +11,4 @@ pyarrow>=14.0.0
 # GeoParquet (optional; for geometry column in prep_data.py)
 geopandas
 shapely
+earthengine-api

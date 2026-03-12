@@ -1,39 +1,25 @@
 # NoiseMap
 
-Temporally varying noise maps from [NoiseCapture](https://noise-planet.org/) (noise in dB, time, location). Data prep scripts produce a single table (GeoParquet/Parquet) for downstream ML (e.g. AEF embeddings + XGBoost).
+One GeoParquet from [NoiseCapture](https://noise-planet.org/) (noise in dB, time, location, AEF embeddings) for downstream ML.
 
 **Data source:** [data.noise-planet.org/dump](https://data.noise-planet.org/dump/) (ODbL, 227 countries).
 
-## Structure
+## Scripts (data_prep/)
 
-- **data_prep/** — Download and prepare NoiseCapture zips into one table.
-  - `download_data.py` — List countries; download country zips.
-  - `prep_data.py` — Parse zips → GeoParquet/Parquet (lon, lat, noise_level_dB, time, country, time features).
-  - See [data_prep/README.md](data_prep/README.md) for full usage.
-
-## Setup
-
-```bash
-pip install -r requirements.txt
-```
+1. **download_data.py** — Download country zips.
+2. **prep_data.py** — Build one GeoParquet with noise, time features, and AEF_embed.
 
 ## Quick start
 
 ```bash
+pip install -r requirements.txt
 cd data_prep
 
-# List available countries (227)
-python download_data.py --list-countries
-
-# Download all (or specific) countries
 python download_data.py --output-dir ../noisecapture_data --all
-# Or: --countries Belgium Austria France
-
-# Prepare one table (run from repo root or data_prep)
 python prep_data.py --input-dir ../noisecapture_data --output ../noisecapture_prepared.parquet
 ```
 
-Raw zips go in `noisecapture_data/` (gitignored). You can also point `--input-dir` to an existing directory of zips (e.g. elsewhere on disk). Output table: `noisecapture_prepared.parquet` (or path you pass to `--output`).
+Set `EARTHENGINE_CREDENTIALS` to your Earth Engine service account JSON path, or run `earthengine authenticate` once. Result: `noisecapture_prepared.parquet` (GeoParquet with everything).
 
 ## License
 
