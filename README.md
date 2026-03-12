@@ -8,6 +8,7 @@ One GeoParquet from [NoiseCapture](https://noise-planet.org/) (noise in dB, time
 
 | Path | Purpose |
 |------|--------|
+| **environment.yml** | Conda env (Python 3.11, PyTorch + CUDA 12.1 for GPU). |
 | **data_prep/** | Download zips, build parquet (noise + time + AEF_embed). |
 | **train_noise_model.py** | Train the noise-prediction MLP (wandb); writes checkpoint + preprocess. |
 | **noise_ml.ipynb** | Inference only: load saved model, EDA, evaluate, heatmap demo. |
@@ -17,15 +18,31 @@ One GeoParquet from [NoiseCapture](https://noise-planet.org/) (noise in dB, time
 1. **download_data.py** — Download country zips.
 2. **prep_data.py** — Build one GeoParquet with noise, time features, and AEF_embed.
 
-## Quick start
+## Conda environment
+
+Use **Python 3.10 or 3.11**. The env installs **PyTorch with CUDA 12.1** for GPU by default.
 
 ```bash
-pip install -r requirements.txt
-cd data_prep
+conda env create -f environment.yml
+conda activate noisemap
+```
 
+If your driver uses a different CUDA version (e.g. 11.8), edit `environment.yml` and set `pytorch-cuda=11.8` (or see [pytorch.org](https://pytorch.org)). For CPU-only, remove the `pytorch-cuda=12.1` line.
+
+## Quick start
+
+Create the conda env (GPU by default), then build the parquet:
+
+```bash
+conda env create -f environment.yml
+conda activate noisemap
+
+cd data_prep
 python download_data.py --output-dir ../noisecapture_data --all
 python prep_data.py --input-dir ../noisecapture_data --output ../noisecapture_prepared.parquet
 ```
+
+Alternatively: `pip install -r requirements.txt` (no conda).
 
 Set `EARTHENGINE_CREDENTIALS` to your Earth Engine service account JSON path, or run `earthengine authenticate` once. Result: `noisecapture_prepared.parquet` (GeoParquet with everything).
 
@@ -36,7 +53,7 @@ All **model training** is in **train_noise_model.py**. The notebook **noise_ml.i
 ### 1. Train (run once)
 
 ```bash
-pip install -r requirements.txt   # includes torch, wandb, scikit-learn, etc.
+conda activate noisemap   # or: pip install -r requirements.txt
 python train_noise_model.py --data data_prep/noisecapture_prepared.parquet --epochs 30 --out-dir checkpoints
 ```
 
