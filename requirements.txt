@@ -1,0 +1,13 @@
+# Data prep (required)
+requests
+pandas
+tqdm
+
+# Parquet output. If "pip install pyarrow" fails (e.g. Arrow/CMake build errors), install with conda:
+#   conda install pyarrow
+# prep_data.py will write CSV instead if parquet is not available.
+pyarrow>=14.0.0
+
+# GeoParquet (optional; for geometry column in prep_data.py)
+geopandas
+shapely

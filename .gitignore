@@ -1,0 +1,36 @@
+# Data (large)
+noisecapture_data/
+*.zip
+*.parquet
+*.geoparquet
+*.csv
+!data_prep/*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
+
+# Env / secrets
+.env
+.env.local
+*.pkl
