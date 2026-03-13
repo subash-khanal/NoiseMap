@@ -1,6 +1,6 @@
 # NoiseMap
 
-One GeoParquet from [NoiseCapture](https://noise-planet.org/) (noise in dB, time, location, AEF embeddings) for downstream ML. Train a PyTorch model with **train_noise_model.py**; use **noise_ml.ipynb** for inference (evaluate + heatmap demo).
+One GeoParquet from [NoiseCapture](https://noise-planet.org/) (noise in dB, time, location, AEF embeddings) for downstream ML. Train a PyTorch model with **train_noise_model.py**; use **dynamic_noisemap.ipynb** for inference (EDA + dynamic noisemap). **aef_interactive_exploration.ipynb** lets you explore AlphaEarth Foundations (AEF) embeddings interactively—draw regions, load AEF, and work with prepped OSM/mask data.
 
 **Data source:** [data.noise-planet.org/dump](https://data.noise-planet.org/dump/) (ODbL, 227 countries).
 
@@ -11,7 +11,8 @@ One GeoParquet from [NoiseCapture](https://noise-planet.org/) (noise in dB, time
 | **environment.yml** | Conda env (Python 3.11, PyTorch + CUDA 12.1 for GPU). |
 | **data_prep/** | Download zips, build parquet (noise + time + AEF_embed). |
 | **train_noise_model.py** | Train the noise-prediction MLP (wandb); writes checkpoint + preprocess. |
-| **noise_ml.ipynb** | Inference only: load saved model, EDA, evaluate, heatmap demo. |
+| **dynamic_noisemap.ipynb** | Inference only: load saved model, EDA, dynamic noisemap (draw region → AEF + prediction heatmap). |
+| **aef_interactive_exploration.ipynb** | Interactive exploration of AlphaEarth Foundations (AEF) embeddings: draw regions, load AEF, inspect embeddings and tags (e.g. OSM). |
 
 ## Scripts (data_prep/)
 
@@ -48,7 +49,7 @@ Set `EARTHENGINE_CREDENTIALS` to your Earth Engine service account JSON path, or
 
 ## Training (script) and inference (notebook)
 
-All **model training** is in **train_noise_model.py**. The notebook **noise_ml.ipynb** is for **inference only** (load saved model, evaluate, heatmap).
+All **model training** is in **train_noise_model.py**. **dynamic_noisemap.ipynb** is for **inference only** (load saved model, EDA, heatmap). **aef_interactive_exploration.ipynb** is for exploring AEF embeddings interactively (draw regions, load AEF, work with prepped OSM/mask data).
 
 ### 1. Train (run once)
 
@@ -61,7 +62,7 @@ This writes `checkpoints/noise_mlp_checkpoint.pt` and `checkpoints/noise_mlp_pre
 
 ### 2. Infer (notebook)
 
-Open **noise_ml.ipynb**, set `CKPT_DIR = Path('checkpoints')` (or your output folder), then run:
+Open **dynamic_noisemap.ipynb** (or **noise_ml.ipynb** if present); data and checkpoints are downloaded from a shared Drive folder by default. Then run:
 
 - **Load data** + **EDA** (optional).
 - **Load model** — loads checkpoint and preprocess from `CKPT_DIR`.
