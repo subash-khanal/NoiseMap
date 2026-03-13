@@ -1,74 +1,50 @@
 # NoiseMap
 
-One GeoParquet from [NoiseCapture](https://noise-planet.org/) (noise in dB, time, location, AEF embeddings) for downstream ML. Train a PyTorch model with **train_noise_model.py**; use **dynamic_noisemap.ipynb** for inference (EDA + dynamic noisemap). **aef_interactive_exploration.ipynb** lets you explore AlphaEarth Foundations (AEF) embeddings interactively—draw regions, load AEF, and work with prepped OSM/mask data.
+Predict environmental noise (dB) from [AlphaEarth Foundations (AEF)](https://source.coop/tge-labs/aef) embeddings. **Why AEF?** AEF gives dense 64-d embeddings from satellite imagery; using them as input lets the model use land use and geography without hand-crafted features and **generalize spatially**—we can query AEF for any location and predict noise where we have no measurements, so we can build noisemaps for arbitrary regions and times.
 
-**Data source:** [data.noise-planet.org/dump](https://data.noise-planet.org/dump/) (ODbL, 227 countries).
+## Pipeline (NoiseMap)
 
-## Project layout
+### 1. Prepare data
 
-| Path | Purpose |
-|------|--------|
-| **environment.yml** | Conda env (Python 3.11, PyTorch + CUDA 12.1 for GPU). |
-| **data_prep/** | Download zips, build parquet (noise + time + AEF_embed). |
-| **train_noise_model.py** | Train the noise-prediction MLP (wandb); writes checkpoint + preprocess. |
-| **dynamic_noisemap.ipynb** | Inference only: load saved model, EDA, dynamic noisemap (draw region → AEF + prediction heatmap). |
-| **aef_interactive_exploration.ipynb** | Interactive exploration of AlphaEarth Foundations (AEF) embeddings: draw regions, load AEF, inspect embeddings and tags (e.g. OSM). |
-
-## Scripts (data_prep/)
-
-1. **download_data.py** — Download country zips.
-2. **prep_data.py** — Build one GeoParquet with noise, time features, and AEF_embed.
-
-## Conda environment
-
-Use **Python 3.10 or 3.11**. The env installs **PyTorch with CUDA 12.1** for GPU by default.
+From the repo root:
 
 ```bash
-conda env create -f environment.yml
-conda activate noisemap
-```
-
-If your driver uses a different CUDA version (e.g. 11.8), edit `environment.yml` and set `pytorch-cuda=11.8` (or see [pytorch.org](https://pytorch.org)). For CPU-only, remove the `pytorch-cuda=12.1` line.
-
-## Quick start
-
-Create the conda env (GPU by default), then build the parquet:
-
-```bash
-conda env create -f environment.yml
-conda activate noisemap
-
 cd data_prep
+
+# Optional: list available countries (227)
+python download_data.py --list-countries
+
+# Download NoiseCapture country zips into a directory (e.g. ../noisecapture_data)
 python download_data.py --output-dir ../noisecapture_data --all
+
+# Build one GeoParquet and add AEF at each point (requires Earth Engine auth)
 python prep_data.py --input-dir ../noisecapture_data --output ../noisecapture_prepared.parquet
 ```
 
-Alternatively: `pip install -r requirements.txt` (no conda).
+**Result:** `noisecapture_prepared.parquet` (columns: `lon`, `lat`, `noise_level_dB`, `time_epoch`, `datetime_utc`, `hour`, `hour_sin`, `hour_cos`, `is_night`, `country`, `AEF_embed`, `geometry`).  
+Set `EARTHENGINE_CREDENTIALS` to your Earth Engine service account JSON path, or run `earthengine authenticate` once before the last step.
 
-Set `EARTHENGINE_CREDENTIALS` to your Earth Engine service account JSON path, or run `earthengine authenticate` once. Result: `noisecapture_prepared.parquet` (GeoParquet with everything).
+### 2. Train model
 
-## Training (script) and inference (notebook)
-
-All **model training** is in **train_noise_model.py**. **dynamic_noisemap.ipynb** is for **inference only** (load saved model, EDA, heatmap). **aef_interactive_exploration.ipynb** is for exploring AEF embeddings interactively (draw regions, load AEF, work with prepped OSM/mask data).
-
-### 1. Train (run once)
+From the repo root:
 
 ```bash
-conda activate noisemap   # or: pip install -r requirements.txt
-python train_noise_model.py --data data_prep/noisecapture_prepared.parquet --epochs 30 --out-dir checkpoints
+python train_noise_model.py \
+  --data data_prep/noisecapture_prepared.parquet \
+  --epochs 30 \
+  --out-dir checkpoints
 ```
 
-This writes `checkpoints/noise_mlp_checkpoint.pt` and `checkpoints/noise_mlp_preprocess.joblib`.
+**Result:** `checkpoints/noise_mlp_checkpoint.pt` and `checkpoints/noise_mlp_preprocess.joblib`. Optional: set `WANDB_PROJECT=noise-map` (or use `--wandb-project`) for wandb logging.
 
-### 2. Infer (notebook)
+### 3. Infer / dynamic noisemap
 
-Open **dynamic_noisemap.ipynb** (or **noise_ml.ipynb** if present); data and checkpoints are downloaded from a shared Drive folder by default. Then run:
+Open **dynamic_noisemap.ipynb** in [Google Colab](https://colab.research.google.com/) (or locally). The notebook downloads the parquet, checkpoint, and preprocess automatically, so you can skip steps 1–2. Run the cells: load data, load model, then draw a region on the map and run the demo to get a predicted noise (dB) heatmap for that area.
 
-- **Load data** + **EDA** (optional).
-- **Load model** — loads checkpoint and preprocess from `CKPT_DIR`.
-- **Evaluate** — test-set metrics and predicted vs actual plot.
-- **Heatmap demo** — set `bbox` and `hour`; runs the model on AEF for that region and shows a noise (dB) map. For the heatmap, install: `pip install aef-loader odc-geo pyproj nest_asyncio`.
+**Pre-built artifacts** (parquet, checkpoint, preprocess) are in this [Google Drive folder](https://drive.google.com/drive/folders/1lbL3juj2hkUhBTDJL78wvlb5F6SIDtAe); the notebook is configured to use them when run on Colab.
 
-## License
+---
 
-Code: use as you like. NoiseCapture data: ODbL ([noise-planet.org](https://noise-planet.org/)).
+## Bonus
+
+**aef_interactive_exploration.ipynb** — A separate notebook for exploring [AlphaEarth Foundations (AEF)](https://source.coop/tge-labs/aef) embeddings. It is not part of the noise pipeline. You can draw regions on a map, load AEF for those areas, and work with prepped OSM/mask data to inspect embeddings and tags. Useful if you want to learn simple ways to query and use AEF (e.g. with [aef-loader](https://pypi.org/project/aef-loader/)) for other geospatial tasks. Prepped data for Part 2 is also available in the same [Google Drive folder](https://drive.google.com/drive/folders/1lbL3juj2hkUhBTDJL78wvlb5F6SIDtAe) (`osm_prepped_data.pkl`).
