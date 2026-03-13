@@ -1,8 +1,3 @@
-# Conda environment for NoiseMap (data prep + training + inference)
-# Create: conda env create -f environment.yml
-# Activate: conda activate noisemap
-# PyTorch is installed with CUDA 12.1 for GPU. For a different CUDA version see https://pytorch.org
-
 name: noisemap
 channels:
   - pytorch
@@ -10,7 +5,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.11
+  - python=3.12
   - pip
   - pandas
   - pyarrow
@@ -18,14 +13,15 @@ dependencies:
   - tqdm
   - geopandas
   - shapely
+  - pyproj          
   - scikit-learn
   - pytorch
+  - torchvision     
   - pytorch-cuda=12.1
   - pip:
     - wandb
     - earthengine-api
-    # Optional, for heatmap in noise_ml.ipynb:
-    # - aef-loader
-    # - odc-geo
-    # - pyproj
-    # - nest-asyncio
+    - aef-loader
+    - odc-geo
+    - nest-asyncio
+    - geemap        # Added this for your GEE-to-XGBoost workflow

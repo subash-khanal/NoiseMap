@@ -35,3 +35,7 @@ build/
 .env.local
 *.pkl
 *.json
+*.log
+wandb/
+*.pt
+*.joblib

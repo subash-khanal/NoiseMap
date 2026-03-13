@@ -80,7 +80,7 @@ def load_and_prepare(parquet_path: Path):
 
 
 class NoiseMLP(nn.Module):
-    def __init__(self, n_in, hidden=(128, 64)):
+    def __init__(self, n_in, hidden=(256, 256, 128, 64)):
         super().__init__()
         layers = []
         prev = n_in
@@ -97,10 +97,10 @@ class NoiseMLP(nn.Module):
 def main():
     p = argparse.ArgumentParser(description="Train noise prediction MLP with wandb")
     p.add_argument("--data", type=Path, default=Path("data_prep/noisecapture_prepared.parquet"), help="Parquet path")
-    p.add_argument("--epochs", type=int, default=30)
+    p.add_argument("--epochs", type=int, default=50)
     p.add_argument("--batch-size", type=int, default=2048)
     p.add_argument("--lr", type=float, default=1e-3)
-    p.add_argument("--hidden", type=int, nargs="+", default=[128, 64])
+    p.add_argument("--hidden", type=int, nargs="+", default=[256, 256, 128, 64])
     p.add_argument("--out-dir", type=Path, default=Path("."))
     p.add_argument("--wandb-project", type=str, default="noise-map")
     p.add_argument("--seed", type=int, default=42)
@@ -192,7 +192,7 @@ def main():
             best_loss = test_loss
             best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
         if (epoch + 1) % 5 == 0:
-            print(f"Epoch {epoch+1}/{args.epochs}  train_loss={train_loss:.4f}  test_rmse={test_rmse:.2f} dB")
+            print(f"Epoch {epoch+1}/{args.epochs}  train_loss={train_loss:.4f}  test_loss={test_loss:.4f}  test_rmse={test_rmse:.2f} dB")
 
     model.load_state_dict(best_state)
     if wandb:
